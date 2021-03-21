@@ -1,0 +1,196 @@
+import pygame
+pygame.init()
+
+class game():
+
+    def __init__(self):
+        self.clock = pygame.time.Clock()
+        self.tick = 60
+        self.running = True
+        self.width = 600
+        self.height = 800
+        self.black = (0, 0, 0)
+        self.white = (255, 255, 255)
+        self.red = (255,0 , 0)
+
+        self.speed = 10
+        self.paddle_height = 25
+        self.paddle_width = 125
+        self.win = pygame.display.set_mode((self.width, self.height))
+
+    def update(self):
+        pygame.draw.rect(self.win, self.white, (0, int(self.height/2), self.width, 5))
+        pygame.display.update()
+        self.win.fill(self.black)
+
+game = game()
+
+class player1():
+
+    def __init__(self):
+        self.x = 300
+        self.y = 700
+        self.width = game.paddle_width
+        self.height = game.paddle_height
+        self.player1 = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def move(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_RIGHT]:
+            self.x += game.speed
+        elif key[pygame.K_LEFT]:
+            self.x += -game.speed
+
+
+    def draw(self):
+        self.player1 = pygame.Rect(self.x, self.y, self.width, self.height)
+        pygame.draw.rect(game.win, game.white, self.player1)
+
+    def boundaries(self):
+        if self.x <= 0:
+            self.x = 0
+        if self.x + self.width >= game.width:
+            self.x = game.width - self.width
+
+player1 = player1()
+
+
+
+
+class player2():
+
+    def __init__(self):
+        self.x = 300
+        self.y = 100
+        self.width = game.paddle_width
+        self.height = game.paddle_height
+        self.player2 = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def move(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_d]:
+            self.x += game.speed
+        elif key[pygame.K_a]:
+            self.x += -game.speed
+
+    def draw(self):
+        self.player2 = pygame.Rect(self.x, self.y, self.width, self.height)
+        pygame.draw.rect(game.win, game.white, self.player2)
+
+    def boundaries(self):
+        if self.x <= 0:
+            self.x = 0
+        if self.x + self.width >= game.width:
+            self.x = game.width - self.width
+
+player2 = player2()
+
+class ball():
+    def __init__(self):
+
+        self.up = False
+        self.left = False
+        self.num = -1
+        self.num2 = 1
+        self.xm = 0
+
+        self.x = (game.height / 2)
+        self.y = (game.width / 2)
+        self.radius = 15
+        self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
+
+    def draw(self):
+        # self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
+        # pygame.draw.rect(game.win, game.red, self.hitbox, 2)
+
+
+        pygame.draw.circle(game.win, game.white, (int(self.x), int(self.y)), self.radius)
+
+    def move(self):
+        if self.up:
+            self.num = -1
+        if self.left:
+            self.num2 = 1
+        if not self.left:
+            self.num2 = -1
+        if not self.up:
+            self.num = 1
+
+        self.y += 12 * self.num
+        self.x +=  self.xm * self.num2
+
+        self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
+
+    def collide(self):
+        if self.x - self.radius <= 0:
+            self.left = False
+        if self.x + self.radius >= game.width:
+            self.left = True
+
+        if self.hitbox.colliderect(player1.player1) and not (self.y + self.radius > player1.y + 15):
+            if self.x >= player1.x and self.x <= player1.x + int(player1.width / 5):
+                self.xm = -8
+
+            elif self.x >= player1.x + int(player1.width / 5) and self.x <= player1.x + int(player1.width / 5) * 2:
+                self.xm = -4
+
+            elif self.x >= player1.x + int(player1.width / 5) * 2 and self.x <= player1.x + int(player1.width / 5) * 3:
+                self.xm = 0
+
+            elif self.x >= player1.x + int(player1.width / 5) * 3 and self.x <= player1.x + int(player1.width / 5) * 4:
+                self.xm = 4
+
+            elif self.x >= player1.x + int(player1.width / 5) * 4:
+                self.xm = 8
+
+
+            self.up = True
+
+        elif self.hitbox.colliderect(player2.player2) and not (self.y - self.radius < player2.y + player2.height - 15):
+
+            if self.x >= player2.x and self.x <= player2.x + int(player2.width / 5):
+                self.xm = -8
+
+            elif self.x >= player2.x + int(player1.width / 5) and self.x <= player2.x + int(player2.width / 5) * 2:
+                self.xm = -4
+
+            elif self.x >= player2.x + int(player1.width / 5) * 2 and self.x <= player2.x + int(player2.width / 5) * 3:
+                self.xm = 0
+
+            elif self.x >= player2.x + int(player1.width / 5) * 3 and self.x <= player2.x + int(player2.width / 5) * 4:
+                self.xm = 4
+
+            elif self.x >= player2.x + int(player1.width / 5) * 4:
+                self.xm = 8
+
+            self.up = False
+
+
+
+
+
+
+ball = ball()
+
+
+while game.running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()  # quit the screen
+            running = False
+    game.clock.tick(game.tick)
+
+    player1.draw()
+    player2.draw()
+    ball.draw()
+
+    ball.collide()
+
+    player1.move()
+    player2.move()
+    ball.move()
+
+    player1.boundaries()
+    player2.boundaries()
+    game.update()
+
